@@ -75,3 +75,26 @@
 
 ### 安装 V2ray
 
+首先执行 `bash <(curl -s -L https://git.io/v2ray.sh)，回车  `
+
+![0](./pic/v2ray/0.png)
+
+选择 1，安装：
+
+![1](./pic/v2ray/1.png)
+
+通信协议选择 3，WebSocket。注意，你的选项可能和我不一样，要选择 WebSocket 对应的数字：
+
+![2](./pic/v2ray/2.png)
+
+下面的一直按回车就行：
+
+![3](./pic/v2ray/3.png)
+
+注意你的 v2ray 端口可能和我不一样
+
+![4](./pic/v2ray/4.png)
+
+最后如果出现如下界面，说明安装完成，要保存下面信息，一会有用
+
+![5](./pic/v2ray/5.png)
