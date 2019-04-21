@@ -279,7 +279,7 @@ sudo iptables-save # 如果有上面那些规则就是设置成功了
 
 如果规则已经设置成功，现在我们首先执行 `dig google.com` 来看看 dns 解析是否正常（dig 命令是一个用于询问 DNS 域名服务器的灵活的工具。它执行 DNS 查询，显示从已查询名称服务器返回的应答。) 
 
-**这里需要注意，v2ray 刚启动就立刻执行 dig 命令可能无法解析 dns，如果上一条命令显示无法解析 google，可以等 5 分钟再试试）** 如果能解析域名了，那么试试 `curl google.com`，看看是否可以获取到服务器数据，如果可以，那么我们的 树莓派 DNS 服务器就已经配置完了，下面我们配置一下开机自启动
+**这里需要注意，v2ray 刚启动就立刻执行 dig 命令可能无法解析 dns，如果上一条命令显示无法解析 google，可以重启等 5 分钟再试试）** 如果能解析域名了，那么试试 `curl google.com`，看看是否可以获取到服务器数据，如果可以，那么我们的 树莓派 DNS 服务器就已经配置完了，下面我们配置一下开机自启动
 
 
 
@@ -300,11 +300,32 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 @reboot cd /etc/kaka/ && bash iptables.rule
 ```
 
-同时经过上面的步骤，我们的 v2ray 和 dnsmasq 应该是开机自启的服务，那么我们可以重启试一下。 重启后使用 `dig google.com` 和 `curl google.com` 如果能获取到数据，那么我们自启动也配置成功（别忘了刚开机可能无法立即解析 dns，解析不到检查一下 v2ray 和 dnsmasq 服务是否正常启动以及 iptables 是否设置成功，都是正常的那就等 5 分钟再试试）  
+同时经过上面的步骤，我们的 v2ray 和 dnsmasq 应该是开机自启的服务，那么我们可以重启试一下。 重启后使用 `dig google.com` 和 `curl google.com` 如果能获取到数据，那么我们自启动也配置成功（**别忘了刚开机可能无法立即解析 dns，解析不到检查一下 v2ray 和 dnsmasq 服务是否正常启动以及 iptables 是否设置成功，都是正常的那就等 5 分钟再试试**）
 
 
 
 ## 客户端配置
 
+### Windows
 
 
+
+### Linux
+
+首先编辑 `/etc/resolv.conf` 设置 DNS，将文件内容改为树莓派 ip：
+
+![1](./pic/client/1.png)
+
+设置默认的网关为树莓派的 ip：
+
+```
+sudo route add default gw 192.168.1.152
+```
+
+
+
+### Android
+
+一般来说长按 WIFI 会出现高级选项，IP 不用变，DNS 和 网关设置为树莓派的 IP
+
+![0](/home/kaka/kaka/raspberry-pi-dns/pic/client/0.png)
