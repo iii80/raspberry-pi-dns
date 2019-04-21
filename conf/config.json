@@ -1,0 +1,131 @@
+{
+  "log": {
+    "access": "/var/log/v2ray/access.log",
+    "error": "/var/log/v2ray/error.log",
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "port": 1080,
+      "listen": "0.0.0.0",
+      "protocol": "socks",
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      },
+      "settings": {
+        "auth": "noauth",
+        "udp": true,
+        "ip": null,
+        "clients": null
+      },
+      "streamSettings": null
+    },
+    {
+      "protocol": "dokodemo-door",
+      "port":2000,
+      "settings":{
+        "network": "tcp,udp",
+        "timeout": 30,
+        "followRedirect": true
+      }
+    },
+    {
+      "protocol": "dokodemo-door",
+      "port":5353,
+      "settings":{
+        "address":"8.8.8.8",
+	    "port":53,
+     	"network": "udp",
+    	"timeout": 30,
+    	"followRedirect": false
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "proxy",
+      "protocol": "vmess",
+      "settings": {
+        "vnext": [
+          {
+            "address": "你服务器的 ip",
+            "port": 30707(你服务器的端口),
+            "users": [
+              {
+                "id": "你 v2ray 服务器配置时获得的 id",
+                "alterId": 233,
+                "email": "t@t.tt",
+                "security": "auto"
+              }
+            ]
+          }
+        ],
+        "servers": null,
+        "response": null
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "",
+        "sockopt": {
+          "mark": 255
+        },
+        "tlsSettings": {
+          "allowInsecure": true,
+          "serverName": null
+        },
+        "tcpSettings": null,
+        "kcpSettings": null,
+        "wsSettings": {
+          "connectionReuse": true,
+          "path": null,
+          "headers": null
+        },
+        "httpSettings": null
+      },
+      "mux": {
+        "enabled": true
+      }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {
+        "vnext": null,
+        "servers": null,
+        "response": null
+      },
+      "streamSettings": {
+        "sockopt": {
+          "mark": 255
+        }
+      },
+      "mux": null
+    },
+    {
+      "tag": "block",
+      "protocol": "blackhole",
+      "settings": {
+        "vnext": null,
+        "servers": null,
+        "response": {
+          "type": "http"
+        }
+      },
+      "streamSettings": {
+        "sockopt": {
+          "mark": 255
+        }
+      },
+      "mux": null
+    }
+  ],
+  "dns": null,
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": []
+  }
+}
