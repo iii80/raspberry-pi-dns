@@ -21,7 +21,7 @@
 
 ### 安装系统
 
-树莓派我们选择了比较轻量稳定的 [Raspbian Stretch Lite(https://www.raspberrypi.org/downloads/raspbian/) 系统，具体安装教程如下
+树莓派我们选择了比较轻量稳定的 [Raspbian Stretch Lite](https://www.raspberrypi.org/downloads/raspbian/) 系统，具体安装教程如下
 
 [树莓派安装 Raspbian Stretch Lite 系统](./raspberry_pi_install.md)
 
