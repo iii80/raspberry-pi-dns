@@ -138,7 +138,7 @@ conf-dir=/etc/dnsmasq.d
 
 ### 配置 ipset 
 
-我们使用 ipset 将需不能直接访问的网址的 `IP` 加到集合里，通过服务器访问。
+我们使用 ipset 将需不能直接访问的网址的 `IP` 加到集合里，该集合中的 `IP` 通过服务器访问。
 
 ```
 git clone https://github.com/cokebar/gfwlist2dnsmasq.git
@@ -167,7 +167,7 @@ ipset=/1000giri.net/gfwlist
 这样，我们很容易想到透明代理方案： 
 
 - 首先监听 5353 端口来将这些域名解析成真正的 ip。然后将解析出来的 ip 加到名字为 gfwlist 的集合中。
-- 假设我们 V2ray 代理程序监听 2000 端口，作用是把各种类型的请求发给服务器，让服务器完成真正的请求。那么我们可以写一条规则，如果访问的 ip 在 gfwlist 中，那么直接将该请求转发到 2000 端口。
+- 假设我们 V2ray 客户端代理程序监听 2000 端口，作用是把各种类型的请求发给服务器，让服务器完成真正的请求。那么我们可以写一条规则，如果访问的 ip 在 gfwlist 中，那么直接将该请求转发到 2000 端口。
 
 
 
@@ -187,7 +187,7 @@ sudo systemctl status dnsmasq.service # 如果状态正常，再继续进行下�
 
 
 
-将 [config.json](./conf/config.json) 文件拷贝到 `/etc/v2ray/config.json`，要注意需要修改配置文件中的服务器 `ip`, `id` 以及 `port` 参数，主要参数含义如下：
+将 [config.json](./conf/config.json) 文件拷贝到 `/etc/v2ray/config.json`，要注意需将配置文件中 `ip`, `id` 以及 `port` 参数修改为你的服务器对应的参数，主要参数含义如下：
 
 ![12](./pic/raspberrypi/12.png)
 
@@ -263,7 +263,7 @@ iptables -t nat -A PREROUTING -p tcp -m set --match-set gfwlist dst -j REDIRECT 
 iptables -t nat -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port 2000
 ```
 
-注意要修改 `eth0` 为你的树莓派有线网卡名称（用 `ifconfig` 命令可以看到），其次要注意网段转发的部分，我配置了 `192.168.1.0/24` 网段，这个用 `ifconfig` 命令看你的 ip 就能看出来你是什么网段的
+注意要修改 `eth0` 为你的树莓派有线网卡名称（用 `ifconfig` 命令可以看到），其次要注意网段转发的部分，上面配置了 `192.168.1.0/24` 网段，要注意改成你的树莓派所在的网段( `ifconfig` 命令可以查看网段）
 
 
 
@@ -279,7 +279,7 @@ sudo iptables-save # 如果有上面那些规则就是设置成功了
 
 如果规则已经设置成功，现在我们首先执行 `dig google.com` 来看看 dns 解析是否正常（dig 命令是一个用于询问 DNS 域名服务器的灵活的工具。它执行 DNS 查询，显示从已查询名称服务器返回的应答。) 
 
-**这里需要注意，v2ray 刚启动就立刻执行 dig 命令可能无法解析 dns，如果上一条命令显示无法解析 google，可以重启等 5 分钟再试试）** 如果能解析域名了，那么试试 `curl google.com`，看看是否可以获取到服务器数据，如果可以，那么我们的 树莓派 DNS 服务器就已经配置完了，下面我们配置一下开机自启动
+**这里需要注意，v2ray 刚启动就立刻执行 dig 命令可能无法解析 dns，如果上一条命令显示无法解析 google，可以重启等 5 分钟再试试）** 如果能解析域名了，那么试试 `curl google.com`，看看是否可以获取到服务器数据，如果可以，那么我们的 树莓派 DNS 服务器就已经配置完了，下面我们配置一下开机自启动上面脚本
 
 
 
@@ -300,13 +300,25 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 @reboot cd /etc/kaka/ && bash iptables.rule
 ```
 
-同时经过上面的步骤，我们的 v2ray 和 dnsmasq 应该是开机自启的服务，那么我们可以重启试一下。 重启后使用 `dig google.com` 和 `curl google.com` 如果能获取到数据，那么我们自启动也配置成功（**别忘了刚开机可能无法立即解析 dns，解析不到检查一下 v2ray 和 dnsmasq 服务是否正常启动以及 iptables 是否设置成功，都是正常的那就等 5 分钟再试试**）
+同时经过上面的步骤，我们的 v2ray 和 dnsmasq 应该是开机自启的服务，iptables.rule 脚本也会开机自动运行。那么我们可以重启试一下。 重启后使用 `dig google.com` 和 `curl google.com` 如果能获取到数据，那么我们自启动也配置成功（**别忘了刚开机可能无法立即解析 dns，解析不到检查一下 v2ray 和 dnsmasq 服务是否正常启动以及 iptables 是否设置成功，都是正常的那就等 5 分钟再试试**）
 
 
 
 ## 客户端配置
 
 ### Windows
+
+首先按下组合键 `Win + r` 输入 cmd 打开 cmd 窗口，输入 `ipconfig` 查看自己机器 `ip`
+
+![2](./pic/client/2.png)
+
+将电脑连上 WIFI，点击 WIFI 名字后点击属性，会出现如下界面:
+
+![3](./pic/client/3.png)
+
+点击编辑后，按照下图改成手动分配：
+
+![4](./pic/client/4.png)
 
 
 
@@ -329,3 +341,9 @@ sudo route add default gw 192.168.1.152
 一般来说长按 WIFI 会出现高级选项，IP 不用变，DNS 和 网关设置为树莓派的 IP
 
 ![0](./pic/client/0.png)
+
+
+
+## 总结
+
+经过上面的步骤，我们应该可以上 Google 了，这里说一些小技巧，我们可以在上面的 ipset 中设置一个广告集合，在网络上找一下广告的网址我们转发到一个不能解析的端口，这样就可以实现屏蔽广告。作者才疏学浅，难免有疏漏以及错误的地方，欢迎大家写 issue 交流
