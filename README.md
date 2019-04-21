@@ -328,4 +328,4 @@ sudo route add default gw 192.168.1.152
 
 一般来说长按 WIFI 会出现高级选项，IP 不用变，DNS 和 网关设置为树莓派的 IP
 
-![0](/home/kaka/kaka/raspberry-pi-dns/pic/client/0.png)
+![0](./pic/client/0.png)
