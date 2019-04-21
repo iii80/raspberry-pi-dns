@@ -187,6 +187,124 @@ sudo systemctl status dnsmasq.service # 如果状态正常，再继续进行下�
 
 
 
-将 [config.json](./conf/config.json) 文件拷贝到 `/etc/v2ray/config.json`，要注意需要修改配置文件中的服务器 ip，id 以及 port 参数，主要参数如下：
+将 [config.json](./conf/config.json) 文件拷贝到 `/etc/v2ray/config.json`，要注意需要修改配置文件中的服务器 `ip`, `id` 以及 `port` 参数，主要参数含义如下：
 
 ![12](./pic/raspberrypi/12.png)
+
+
+
+我们首先要把树莓派默认的 dns 服务器给禁用：
+
+```
+sudo systemctl stop avahi-daemon
+sudo systemctl disable avahi-daemon
+sudo reboot
+```
+
+重启后我们测试下 v2ray 客户端
+
+```
+sudo systemctl enable v2ray.service
+sudo systemctl start v2ray.service
+sudo systemctl status v2ray.service # 如果状态正常，再继续进行下面步骤(按 q 退出)
+```
+
+
+
+### 开启端口转发
+
+如果我们想把访问国外 ip 的请求转发到 2000 端口，需要开启端口转发，首先编辑 `/etc/sysctl.conf`，找到下面的这一项，把注释去掉：
+
+```
+# 找到下面这一项，把前面注释号#去掉，变成：
+net.ipv4.ip_forward = 1
+```
+
+让上述修改立刻生效：
+
+```
+sudo sysctl -p
+```
+
+
+
+### 配置 iptables 规则
+
+
+
+我们需要让系统知道，把什么样的数据转发到 2000 端口，交给服务器请求，所以需要配置 iptables 规则，新建 `iptables.rule` 内容如下：  
+
+```
+#!/bin/bash
+
+EXTIF="eth0" # 连接外网的网卡
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin; export PATH
+
+iptables -F # 清除所有已制定的规则
+iptables -X # 杀掉所有使用者 “自定义” 的 chain (tables)
+iptables -Z # 将所有的 chian 计数与流量统计归零
+iptables -P INPUT   ACCEPT
+iptables -P OUTPUT  ACCEPT
+iptables -P FORWARD ACCEPT
+
+iptables -F -t nat
+iptables -X -t nat
+iptables -Z -t nat
+iptables -t nat -P PREROUTING  ACCEPT
+iptables -t nat -P POSTROUTING ACCEPT
+iptables -t nat -P OUTPUT      ACCEPT
+
+ipset -N gfwlist iphash # 新建一个名字为 gfwlist 的 ip 散列集合
+iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o $EXTIF -j MASQUERADE # 将该网段的请求都转发的 $EXTIF 网卡 (一般是连接外网的网卡)
+# 如果发现由其它网卡转发过来请求的 ip 与 gfwlist 中的 ip 匹配，转发到 2000 端口
+iptables -t nat -A PREROUTING -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port 2000
+# 本网卡请求的 ip 与 gfwlist 中的 ip 匹配，转发到 2000 端口
+iptables -t nat -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port 2000
+```
+
+注意要修改 `eth0` 为你的树莓派有线网卡名称（用 `ifconfig` 命令可以看到），其次要注意网段转发的部分，我配置了 `192.168.1.0/24` 网段，这个用 `ifconfig` 命令看你的 ip 就能看出来你是什么网段的
+
+
+
+执行该脚本：  
+
+```
+sudo bash iptables.rule
+# 验证是否执行成功
+sudo iptables-save # 如果有上面那些规则就是设置成功了
+```
+
+
+
+如果规则已经设置成功，现在我们首先执行 `dig google.com` 来看看 dns 解析是否正常（dig 命令是一个用于询问 DNS 域名服务器的灵活的工具。它执行 DNS 查询，显示从已查询名称服务器返回的应答。) 
+
+**这里需要注意，v2ray 刚启动就立刻执行 dig 命令可能无法解析 dns，如果上一条命令显示无法解析 google，可以等 5 分钟再试试）** 如果能解析域名了，那么试试 `curl google.com`，看看是否可以获取到服务器数据，如果可以，那么我们的 树莓派 DNS 服务器就已经配置完了，下面我们配置一下开机自启动
+
+
+
+### 开机启动
+
+首先我们把 iptabables.rule 移动到系统目录，防止以后被不小心改乱了，本人挪到了 `/etc/kaka/` 下，切换到 root 用户，树莓派默认无法登录 root 用户，需要给 root 用户设置密码后才能切换：  
+
+```
+sudo passwd
+```
+
+使用 `su` 切换到 root 用户，执行 `crontab -e`，填写如下内容：
+
+```
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+@reboot cd /etc/kaka/ && bash iptables.rule
+```
+
+同时经过上面的步骤，我们的 v2ray 和 dnsmasq 应该是开机自启的服务，那么我们可以重启试一下。 重启后使用 `dig google.com` 和 `curl google.com` 如果能获取到数据，那么我们自启动也配置成功（别忘了刚开机可能无法立即解析 dns，解析不到检查一下 v2ray 和 dnsmasq 服务是否正常启动以及 iptables 是否设置成功，都是正常的那就等 5 分钟再试试）  
+
+
+
+## 客户端配置
+
+
+
