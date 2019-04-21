@@ -34,7 +34,28 @@
 
 首先准备一个 8G 或 8G 以上容量的 tf 卡，通过读卡器插到电脑上，打开软件，设备选择自己的 TF 卡，镜像选择刚刚的解压出来的镜像：
 
-
+![install1](/home/kaka/kaka/raspberry-pi-dns/pic/raspberrypi/install1.png)
 
 ## Linux 安装
+
+首先执行 `lsblk`查看当前的硬盘，看到我们一共有 3 块硬盘 `sda`, `sdb`, `sdc`
+
+![install2](/home/kaka/kaka/raspberry-pi-dns/pic/raspberrypi/install2.png)
+
+现在插入 TF 卡再次执行 `lsblk`
+
+![install3](./pic/raspberrypi/install3.png)
+
+发现多出来一个 `sdd`，那么 sdd 就是我们的 TF 卡，如果你的 TF 卡自动挂载到某个目录（也就是上图的提示部分），那么需要先卸载目录，命令如下（注意目录是你自己机器挂载的目录，如果没有挂载到目录，就不用执行下面这两条命令）
+
+```
+sudo umount /media/kaka/rootfs
+sudo umount /media/kaka/boot
+```
+
+将解压好的 img 镜像拷贝到 TF 卡中（一定要注意下面的 if 后面是你下载的镜像目录，of 是要拷贝到的地方，我的 TF 卡是 sdd，所以是 `/dev/sdd`，你要根据自己机器的实际情况来填写）
+
+```
+dd bs=4M if=/home/kaka/2019-04-08-raspbian-stretch-lite.img of=/dev/sdd conv=fsync
+```
 
