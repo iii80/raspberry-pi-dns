@@ -12,7 +12,7 @@
 
 ### 个人链接
 
-以下是我自己按照教程步骤做完后打包的镜像，如果你选择用这个镜像安装系统（需要你的 TF 卡是 16G 或者 16G 以上），那么只需要把 `v2ray.conf` 文件替换成自己的并且核对一下 iptables.rule 就行（详细步骤参考[树莓派配置](./README.md)的v2ray 和 iptables 配置部分)
+以下是我自己按照教程步骤做完后打包的镜像，如果你选择用这个镜像安装系统（需要你的 TF 卡是 16G 或者 16G 以上），那么只需要把 `v2ray.conf` 文件替换成自己的并且核对一下 `iptables.rule` 就行（详细步骤参考[树莓派配置](./README.md)的 v2ray 和 iptables 配置部分)
 
 ```
 链接: https://pan.baidu.com/s/1gk4IoJoHHwKyAG0jfzYuhg 
